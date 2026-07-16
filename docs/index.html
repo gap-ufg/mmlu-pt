@@ -1,0 +1,578 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta
+      name="description"
+      content="Portuguese-MMLU is a native Portuguese benchmark for evaluating massive multitask language understanding with Brazilian high-stakes exam questions."
+    >
+    <title>Portuguese-MMLU</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="Portuguese-MMLU home">Portuguese-MMLU</a>
+      <nav class="nav" aria-label="Page sections">
+        <a href="#abstract">Abstract</a>
+        <a href="#dataset">Dataset</a>
+        <a href="#results">Results</a>
+        <a href="#citation">Citation</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="paper-title">
+        <div class="hero-media" aria-hidden="true"></div>
+        <div class="hero-content">
+          <p class="eyebrow">Native Portuguese evaluation benchmark</p>
+          <h1 id="paper-title">Portuguese-MMLU: Measuring Massive Multitask Language Understanding in Portuguese</h1>
+          <p class="lead">
+            A large-scale benchmark built from authentic Brazilian exams to evaluate language-native
+            reasoning across academic and professional domains.
+          </p>
+          <div class="actions" aria-label="Project links">
+            <a class="button" href="https://openreview.net/pdf?id=2FpqhqcNnu" target="_blank" rel="noopener">Paper</a>
+            <span class="button disabled" aria-disabled="true">Code coming soon</span>
+            <a class="button" href="https://huggingface.co/collections/mmlu-pt/mmlu-pt-dataset" target="_blank" rel="noopener">Dataset</a>
+            <a class="button secondary" href="#citation">Citation</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats" aria-label="Benchmark summary">
+        <article>
+          <strong>26,580</strong>
+          <span>Full Dataset questions</span>
+        </article>
+        <article>
+          <strong>2 levels</strong>
+          <span>High School and Undergraduate</span>
+        </article>
+        <article>
+          <strong>Native</strong>
+          <span>Portuguese exam content</span>
+        </article>
+        <article>
+          <strong>Brazilian</strong>
+          <span>high-stakes examinations</span>
+        </article>
+      </section>
+
+      <section id="abstract" class="section narrow">
+        <p class="section-label">Abstract</p>
+        <h2>A culturally grounded alternative to translated multilingual evaluation.</h2>
+        <p>
+          The evaluation of large language models has been largely driven by benchmarks such as
+          Massive Multitask Language Understanding (MMLU), which measures multitask reasoning and
+          knowledge across diverse domains. However, existing multilingual evaluations remain
+          predominantly English-centric, while most non-English benchmarks rely on translations that
+          introduce linguistic artifacts and fail to capture culturally grounded knowledge.
+        </p>
+        <p>
+          Portuguese-MMLU is a large-scale native benchmark for evaluating multitask language
+          understanding in Portuguese. It is constructed from authentic Brazilian high-stakes
+          examinations, including university entrance exams, professional certification tests, and
+          public-sector recruitment processes. The benchmark contains more than 26,000 questions
+          spanning High School and Undergraduate levels across humanities, social sciences, STEM, law,
+          medicine, and business domains.
+        </p>
+      </section>
+
+      <section class="section">
+        <p class="section-label">Contributions</p>
+        <div class="split">
+          <div>
+            <h2>Benchmarking Portuguese on its own terms.</h2>
+            <p>
+              Portuguese-MMLU shifts evaluation from translated English-centric tasks toward native
+              questions written for Brazilian academic and professional contexts.
+            </p>
+          </div>
+          <div class="feature-list">
+            <article>
+              <h3>Native source material</h3>
+              <p>Questions come from authentic Brazilian exam sources rather than translations.</p>
+            </article>
+            <article>
+              <h3>Difficulty-aware splits</h3>
+              <p>Model-agreement annotations support natural and balanced evaluation settings.</p>
+            </article>
+            <article>
+              <h3>Broad evaluation panel</h3>
+              <p>Open-weight and proprietary models are evaluated across multiple few-shot settings.</p>
+            </article>
+            <article>
+              <h3>Translation comparison</h3>
+              <p>Native and translated benchmarks reveal different behavior across model families.</p>
+            </article>
+          </div>
+        </div>
+      </section>
+
+      <section id="dataset" class="section tinted">
+        <p class="section-label">Dataset</p>
+        <div class="section-heading">
+          <h2>High School and Undergraduate coverage across Brazilian knowledge domains.</h2>
+          <p>
+            The dataset combines secondary-school entrance examinations, professional certification
+            tests, and public-sector recruitment processes. It is organized into natural-distribution
+            and difficulty-balanced evaluation settings.
+          </p>
+        </div>
+
+        <div class="domain-grid">
+          <figure>
+            <img
+              src="assets/hs_domain_distribution_donut.png"
+              alt="High School domain distribution chart for Portuguese-MMLU."
+              loading="lazy"
+            >
+            <figcaption>High School split domain distribution.</figcaption>
+          </figure>
+          <figure>
+            <img
+              src="assets/ug_domain_distribution_donut.png"
+              alt="Undergraduate domain distribution chart for Portuguese-MMLU."
+              loading="lazy"
+            >
+            <figcaption>Undergraduate split domain distribution.</figcaption>
+          </figure>
+        </div>
+
+        <div class="data-table" role="region" aria-label="Dataset split summary" tabindex="0">
+          <table>
+            <thead>
+              <tr>
+                <th>Split</th>
+                <th>Questions</th>
+                <th>Major domains</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>High School</td>
+                <td>7,233</td>
+                <td>STEM, Languages, Humanities, Health and Biological Sciences</td>
+              </tr>
+              <tr>
+                <td>Undergraduate</td>
+                <td>19,347</td>
+                <td>Law, STEM, Health and Biological Sciences, Business, Accounting, Economics</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="results" class="section">
+        <p class="section-label">Results</p>
+        <div class="section-heading">
+          <h2>Benchmark Leaderboards.</h2>
+          <p>
+            Exact Match results on the Portuguese-MMLU Full Dataset and the difficulty-balanced Hard
+            Set. Each split reports all evaluated models under 0-shot, 3-shot, and 5-shot prompting.
+          </p>
+        </div>
+
+        <div class="result-group" data-result-group="full">
+          <div class="result-group-heading">
+            <h3>Full Dataset</h3>
+            <p>
+              The Full Dataset preserves the natural distribution of questions collected from
+              Brazilian high-stakes examinations. It reports broad performance across both
+              Undergraduate and High School splits, including aggregate few-shot results and
+              domain-level 5-shot breakdowns.
+            </p>
+          </div>
+        </div>
+
+        <div class="result-group" data-result-group="hard">
+          <div class="result-group-heading">
+            <h3>Hard Set</h3>
+            <p>
+              The Hard Set is the difficulty-balanced hard50 split, with a higher concentration of
+              challenging questions. It is designed to reduce saturation and better separate model
+              performance under controlled difficulty.
+            </p>
+            <div class="inline-stats" aria-label="Hard Set summary">
+              <article>
+                <strong>13,254</strong>
+                <span>Hard Set questions</span>
+              </article>
+              <article>
+                <strong>11,212</strong>
+                <span>Undergraduate hard50 questions</span>
+              </article>
+              <article>
+                <strong>2,042</strong>
+                <span>High School hard50 questions</span>
+              </article>
+              <article>
+                <strong>20:30:50</strong>
+                <span>easy, medium, and hard composition</span>
+              </article>
+            </div>
+          </div>
+        </div>
+
+        <div class="table-block" data-result-block="high-school-full">
+          <h3>High School Full Dataset</h3>
+          <div class="data-table" role="region" aria-label="High School Full Dataset leaderboard" tabindex="0">
+            <table class="sortable-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>EM 0-shot</th>
+                  <th>EM 3-shot</th>
+                  <th>EM 5-shot</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Llama-3.2-1B-Instruct</td><td>0.182</td><td>0.298</td><td>0.299</td></tr>
+                <tr><td>Llama-3.2-3B-Instruct</td><td>0.078</td><td>0.484</td><td>0.502</td></tr>
+                <tr><td>Llama-3.1-8B-Instruct</td><td>0.567</td><td>0.601</td><td>0.612</td></tr>
+                <tr><td>Qwen3.5-0.8B</td><td>0.346</td><td>0.366</td><td>0.365</td></tr>
+                <tr><td>Qwen3.5-2B</td><td>0.516</td><td>0.534</td><td>0.552</td></tr>
+                <tr><td>Qwen3.5-4B</td><td>0.492</td><td>0.498</td><td>0.514</td></tr>
+                <tr><td>Qwen3.5-9B</td><td>0.621</td><td>0.599</td><td>0.590</td></tr>
+                <tr><td>Qwen3.5-35B-A3B</td><td>0.671</td><td>0.641</td><td>0.616</td></tr>
+                <tr><td>Gemma-4-E2B-it</td><td>0.565</td><td>0.577</td><td>0.577</td></tr>
+                <tr><td>Gemma-4-E4B-it</td><td>0.688</td><td>0.697</td><td>0.698</td></tr>
+                <tr><td>Gemma-4-26B-A4B-it</td><td>0.771</td><td>0.777</td><td>0.779</td></tr>
+                <tr class="best-row"><td>Gemma-4-31B-it</td><td>0.811</td><td>0.817</td><td>0.817</td></tr>
+                <tr><td>Phi-4</td><td>0.687</td><td>0.707</td><td>0.708</td></tr>
+                <tr><td>Nemotron-3-Nano-4B</td><td>0.646</td><td>0.655</td><td>0.649</td></tr>
+                <tr><td>Tucano2-qwen-0.5B-Instruct</td><td>0.000</td><td>0.360</td><td>0.375</td></tr>
+                <tr><td>Tucano2-qwen-1.5B-Instruct</td><td>0.000</td><td>0.475</td><td>0.419</td></tr>
+                <tr><td>Tucano2-qwen-3.7B-Instruct</td><td>0.000</td><td>0.653</td><td>0.656</td></tr>
+                <tr class="best-row"><td>gemini-3-flash</td><td>0.849</td><td>0.860</td><td>0.862</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block" data-result-block="undergraduate-full">
+          <h3>Undergraduate Full Dataset</h3>
+          <div class="data-table" role="region" aria-label="Undergraduate Full Dataset leaderboard" tabindex="0">
+            <table class="sortable-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>EM 0-shot</th>
+                  <th>EM 3-shot</th>
+                  <th>EM 5-shot</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Llama-3.2-1B-Instruct</td><td>0.209</td><td>0.288</td><td>0.293</td></tr>
+                <tr><td>Llama-3.2-3B-Instruct</td><td>0.063</td><td>0.441</td><td>0.433</td></tr>
+                <tr><td>Llama-3.1-8B-Instruct</td><td>0.472</td><td>0.529</td><td>0.525</td></tr>
+                <tr><td>Qwen3.5-0.8B</td><td>0.316</td><td>0.330</td><td>0.349</td></tr>
+                <tr><td>Qwen3.5-2B</td><td>0.444</td><td>0.463</td><td>0.476</td></tr>
+                <tr><td>Qwen3.5-4B</td><td>0.391</td><td>0.423</td><td>0.425</td></tr>
+                <tr><td>Qwen3.5-9B</td><td>0.513</td><td>0.501</td><td>0.504</td></tr>
+                <tr><td>Qwen3.5-35B-A3B</td><td>0.599</td><td>0.583</td><td>0.555</td></tr>
+                <tr><td>Gemma-4-E2B-it</td><td>0.501</td><td>0.529</td><td>0.527</td></tr>
+                <tr><td>Gemma-4-E4B-it</td><td>0.627</td><td>0.644</td><td>0.645</td></tr>
+                <tr><td>Gemma-4-26B-A4B-it</td><td>0.767</td><td>0.777</td><td>0.774</td></tr>
+                <tr class="best-row"><td>Gemma-4-31B-it</td><td>0.815</td><td>0.819</td><td>0.821</td></tr>
+                <tr><td>Phi-4</td><td>0.636</td><td>0.651</td><td>0.657</td></tr>
+                <tr><td>Nemotron-3-Nano-4B</td><td>0.532</td><td>0.525</td><td>0.526</td></tr>
+                <tr><td>Tucano2-qwen-0.5B-Instruct</td><td>0.000</td><td>0.269</td><td>0.299</td></tr>
+                <tr><td>Tucano2-qwen-1.5B-Instruct</td><td>0.001</td><td>0.423</td><td>0.424</td></tr>
+                <tr><td>Tucano2-qwen-3.7B-Instruct</td><td>0.002</td><td>0.591</td><td>0.582</td></tr>
+                <tr class="best-row"><td>gemini-3-flash</td><td>0.877</td><td>0.883</td><td>0.886</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block" data-result-block="high-school-hard">
+          <h3>High School Hard Set</h3>
+          <p>
+            Exact Match results on the difficulty-balanced hard50 split under 0-shot, 3-shot, and
+            5-shot prompting.
+          </p>
+          <div class="data-table" role="region" aria-label="High School Hard Set leaderboard" tabindex="0">
+            <table class="sortable-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>EM 0-shot</th>
+                  <th>EM 3-shot</th>
+                  <th>EM 5-shot</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Llama-3.2-1B-Instruct</td><td>0.148</td><td>0.239</td><td>0.247</td></tr>
+                <tr><td>Llama-3.2-3B-Instruct</td><td>0.049</td><td>0.269</td><td>0.292</td></tr>
+                <tr><td>Llama-3.1-8B-Instruct</td><td>0.356</td><td>0.359</td><td>0.396</td></tr>
+                <tr><td>Qwen3.5-0.8B</td><td>0.220</td><td>0.241</td><td>0.262</td></tr>
+                <tr><td>Qwen3.5-2B</td><td>0.308</td><td>0.328</td><td>0.343</td></tr>
+                <tr><td>Qwen3.5-4B</td><td>0.293</td><td>0.286</td><td>0.278</td></tr>
+                <tr><td>Qwen3.5-9B</td><td>0.393</td><td>0.352</td><td>0.365</td></tr>
+                <tr><td>Qwen3.5-35B-A3B</td><td>0.453</td><td>0.423</td><td>0.408</td></tr>
+                <tr><td>Gemma-4-E2B-it</td><td>0.342</td><td>0.336</td><td>0.336</td></tr>
+                <tr><td>Gemma-4-E4B-it</td><td>0.479</td><td>0.463</td><td>0.467</td></tr>
+                <tr><td>Gemma-4-26B-A4B-it</td><td>0.591</td><td>0.606</td><td>0.610</td></tr>
+                <tr class="best-row"><td>Gemma-4-31B-it</td><td>0.663</td><td>0.683</td><td>0.679</td></tr>
+                <tr><td>Phi-4</td><td>0.456</td><td>0.492</td><td>0.491</td></tr>
+                <tr><td>Nemotron-3-Nano-4B</td><td>0.425</td><td>0.440</td><td>0.398</td></tr>
+                <tr><td>Tucano2-qwen-0.5B-Instruct</td><td>0.000</td><td>0.213</td><td>0.222</td></tr>
+                <tr><td>Tucano2-qwen-1.5B-Instruct</td><td>0.000</td><td>0.285</td><td>0.254</td></tr>
+                <tr><td>Tucano2-qwen-3.7B-Instruct</td><td>0.000</td><td>0.439</td><td>0.449</td></tr>
+                <tr class="best-row"><td>Gemini-3-Flash</td><td>0.740</td><td>0.778</td><td>0.778</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block" data-result-block="undergraduate-hard">
+          <h3>Undergraduate Hard Set</h3>
+          <p>
+            Exact Match results on the difficulty-balanced hard50 split under 0-shot, 3-shot, and
+            5-shot prompting.
+          </p>
+          <div class="data-table" role="region" aria-label="Undergraduate Hard Set leaderboard" tabindex="0">
+            <table class="sortable-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>EM 0-shot</th>
+                  <th>EM 3-shot</th>
+                  <th>EM 5-shot</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Llama-3.2-1B-Instruct</td><td>0.201</td><td>0.235</td><td>0.238</td></tr>
+                <tr><td>Llama-3.2-3B-Instruct</td><td>0.042</td><td>0.307</td><td>0.302</td></tr>
+                <tr><td>Llama-3.1-8B-Instruct</td><td>0.326</td><td>0.360</td><td>0.354</td></tr>
+                <tr><td>Qwen3.5-0.8B</td><td>0.241</td><td>0.247</td><td>0.266</td></tr>
+                <tr><td>Qwen3.5-2B</td><td>0.313</td><td>0.315</td><td>0.326</td></tr>
+                <tr><td>Qwen3.5-4B</td><td>0.234</td><td>0.253</td><td>0.265</td></tr>
+                <tr><td>Qwen3.5-9B</td><td>0.348</td><td>0.338</td><td>0.342</td></tr>
+                <tr><td>Qwen3.5-35B-A3B</td><td>0.434</td><td>0.421</td><td>0.398</td></tr>
+                <tr><td>Gemma-4-E2B-it</td><td>0.339</td><td>0.365</td><td>0.359</td></tr>
+                <tr><td>Gemma-4-E4B-it</td><td>0.449</td><td>0.466</td><td>0.473</td></tr>
+                <tr><td>Gemma-4-26B-A4B-it</td><td>0.643</td><td>0.651</td><td>0.650</td></tr>
+                <tr class="best-row"><td>Gemma-4-31B-it</td><td>0.709</td><td>0.715</td><td>0.716</td></tr>
+                <tr><td>Phi-4</td><td>0.473</td><td>0.487</td><td>0.493</td></tr>
+                <tr><td>Nemotron-3-Nano-4B</td><td>0.387</td><td>0.376</td><td>0.376</td></tr>
+                <tr><td>Tucano2-qwen-0.5B-Instruct</td><td>0.000</td><td>0.206</td><td>0.229</td></tr>
+                <tr><td>Tucano2-qwen-1.5B-Instruct</td><td>0.001</td><td>0.286</td><td>0.286</td></tr>
+                <tr><td>Tucano2-qwen-3.7B-Instruct</td><td>0.002</td><td>0.428</td><td>0.418</td></tr>
+                <tr class="best-row"><td>Gemini-3-Flash</td><td>0.806</td><td>0.817</td><td>0.820</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block" data-result-block="undergraduate-domain">
+          <h3>Undergraduate Domain-Level EM</h3>
+          <p>
+            Domain-level EM performance on the Undergraduate split of the Portuguese-MMLU Full
+            Dataset under the 5-shot setting. Heatmap intensity indicates relative performance within
+            each domain.
+          </p>
+          <div class="data-table domain-table" role="region" aria-label="Undergraduate domain-level EM table" tabindex="0">
+            <table class="sortable-table">
+              <thead>
+                <tr>
+                  <th>Model</th>
+                  <th>Accounting</th>
+                  <th>Architecture</th>
+                  <th>Business Administration</th>
+                  <th>Economics</th>
+                  <th>Health and Biological Sciences</th>
+                  <th>Humanities</th>
+                  <th>Languages</th>
+                  <th>Law</th>
+                  <th>STEM</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td>Llama-3.2-1B-Instruct</td><td class="heat" style="--score: .271">0.271</td><td class="heat" style="--score: .309">0.309</td><td class="heat" style="--score: .313">0.313</td><td class="heat" style="--score: .254">0.254</td><td class="heat" style="--score: .324">0.324</td><td class="heat" style="--score: .332">0.332</td><td class="heat" style="--score: .282">0.282</td><td class="heat" style="--score: .293">0.293</td><td class="heat" style="--score: .261">0.261</td></tr>
+                <tr><td>Llama-3.2-3B-Instruct</td><td class="heat" style="--score: .430">0.430</td><td class="heat" style="--score: .476">0.476</td><td class="heat" style="--score: .518">0.518</td><td class="heat" style="--score: .418">0.418</td><td class="heat" style="--score: .444">0.444</td><td class="heat" style="--score: .464">0.464</td><td class="heat" style="--score: .394">0.394</td><td class="heat" style="--score: .405">0.405</td><td class="heat" style="--score: .351">0.351</td></tr>
+                <tr><td>Llama-3.1-8B-Instruct</td><td class="heat" style="--score: .515">0.515</td><td class="heat" style="--score: .550">0.550</td><td class="heat" style="--score: .601">0.601</td><td class="heat" style="--score: .490">0.490</td><td class="heat" style="--score: .552">0.552</td><td class="heat" style="--score: .552">0.552</td><td class="heat" style="--score: .536">0.536</td><td class="heat" style="--score: .470">0.470</td><td class="heat" style="--score: .460">0.460</td></tr>
+                <tr><td>Qwen3.5-0.8B</td><td class="heat" style="--score: .346">0.346</td><td class="heat" style="--score: .372">0.372</td><td class="heat" style="--score: .417">0.417</td><td class="heat" style="--score: .362">0.362</td><td class="heat" style="--score: .340">0.340</td><td class="heat" style="--score: .356">0.356</td><td class="heat" style="--score: .326">0.326</td><td class="heat" style="--score: .341">0.341</td><td class="heat" style="--score: .283">0.283</td></tr>
+                <tr><td>Qwen3.5-2B</td><td class="heat" style="--score: .475">0.475</td><td class="heat" style="--score: .476">0.476</td><td class="heat" style="--score: .537">0.537</td><td class="heat" style="--score: .467">0.467</td><td class="heat" style="--score: .496">0.496</td><td class="heat" style="--score: .540">0.540</td><td class="heat" style="--score: .459">0.459</td><td class="heat" style="--score: .420">0.420</td><td class="heat" style="--score: .411">0.411</td></tr>
+                <tr><td>Qwen3.5-4B</td><td class="heat" style="--score: .358">0.358</td><td class="heat" style="--score: .442">0.442</td><td class="heat" style="--score: .557">0.557</td><td class="heat" style="--score: .423">0.423</td><td class="heat" style="--score: .431">0.431</td><td class="heat" style="--score: .476">0.476</td><td class="heat" style="--score: .419">0.419</td><td class="heat" style="--score: .210">0.210</td><td class="heat" style="--score: .508">0.508</td></tr>
+                <tr><td>Qwen3.5-9B</td><td class="heat" style="--score: .424">0.424</td><td class="heat" style="--score: .558">0.558</td><td class="heat" style="--score: .592">0.592</td><td class="heat" style="--score: .519">0.519</td><td class="heat" style="--score: .521">0.521</td><td class="heat" style="--score: .568">0.568</td><td class="heat" style="--score: .495">0.495</td><td class="heat" style="--score: .298">0.298</td><td class="heat" style="--score: .563">0.563</td></tr>
+                <tr><td>Qwen3.5-35B-A3B</td><td class="heat" style="--score: .529">0.529</td><td class="heat" style="--score: .584">0.584</td><td class="heat" style="--score: .676">0.676</td><td class="heat" style="--score: .546">0.546</td><td class="heat" style="--score: .553">0.553</td><td class="heat" style="--score: .584">0.584</td><td class="heat" style="--score: .545">0.545</td><td class="heat" style="--score: .388">0.388</td><td class="heat" style="--score: .591">0.591</td></tr>
+                <tr><td>Gemma-4-E2B-it</td><td class="heat" style="--score: .514">0.514</td><td class="heat" style="--score: .587">0.587</td><td class="heat" style="--score: .595">0.595</td><td class="heat" style="--score: .491">0.491</td><td class="heat" style="--score: .504">0.504</td><td class="heat" style="--score: .572">0.572</td><td class="heat" style="--score: .539">0.539</td><td class="heat" style="--score: .473">0.473</td><td class="heat" style="--score: .470">0.470</td></tr>
+                <tr><td>Gemma-4-E4B-it</td><td class="heat" style="--score: .616">0.616</td><td class="heat" style="--score: .684">0.684</td><td class="heat" style="--score: .700">0.700</td><td class="heat" style="--score: .653">0.653</td><td class="heat" style="--score: .661">0.661</td><td class="heat" style="--score: .636">0.636</td><td class="heat" style="--score: .682">0.682</td><td class="heat" style="--score: .581">0.581</td><td class="heat" style="--score: .592">0.592</td></tr>
+                <tr><td>Gemma-4-26B-A4B-it</td><td class="heat" style="--score: .739">0.739</td><td class="heat" style="--score: .796">0.796</td><td class="heat" style="--score: .794">0.794</td><td class="heat" style="--score: .784">0.784</td><td class="heat" style="--score: .820">0.820</td><td class="heat" style="--score: .736">0.736</td><td class="heat" style="--score: .789">0.789</td><td class="heat" style="--score: .778">0.778</td><td class="heat" style="--score: .732">0.732</td></tr>
+                <tr class="best-row"><td>Gemma-4-31B-it</td><td class="heat" style="--score: .778">0.778</td><td class="heat" style="--score: .859">0.859</td><td class="heat" style="--score: .826">0.826</td><td class="heat" style="--score: .833">0.833</td><td class="heat" style="--score: .861">0.861</td><td class="heat" style="--score: .764">0.764</td><td class="heat" style="--score: .861">0.861</td><td class="heat" style="--score: .826">0.826</td><td class="heat" style="--score: .778">0.778</td></tr>
+                <tr><td>Phi-4</td><td class="heat" style="--score: .631">0.631</td><td class="heat" style="--score: .658">0.658</td><td class="heat" style="--score: .708">0.708</td><td class="heat" style="--score: .686">0.686</td><td class="heat" style="--score: .693">0.693</td><td class="heat" style="--score: .664">0.664</td><td class="heat" style="--score: .696">0.696</td><td class="heat" style="--score: .562">0.562</td><td class="heat" style="--score: .612">0.612</td></tr>
+                <tr><td>Nemotron-3-Nano-4B</td><td class="heat" style="--score: .471">0.471</td><td class="heat" style="--score: .517">0.517</td><td class="heat" style="--score: .586">0.586</td><td class="heat" style="--score: .564">0.564</td><td class="heat" style="--score: .535">0.535</td><td class="heat" style="--score: .532">0.532</td><td class="heat" style="--score: .505">0.505</td><td class="heat" style="--score: .366">0.366</td><td class="heat" style="--score: .655">0.655</td></tr>
+                <tr><td>Tucano2-qwen-0.5B-Instruct</td><td class="heat" style="--score: .224">0.224</td><td class="heat" style="--score: .346">0.346</td><td class="heat" style="--score: .337">0.337</td><td class="heat" style="--score: .311">0.311</td><td class="heat" style="--score: .313">0.313</td><td class="heat" style="--score: .352">0.352</td><td class="heat" style="--score: .202">0.202</td><td class="heat" style="--score: .335">0.335</td><td class="heat" style="--score: .269">0.269</td></tr>
+                <tr><td>Tucano2-qwen-1.5B-Instruct</td><td class="heat" style="--score: .251">0.251</td><td class="heat" style="--score: .476">0.476</td><td class="heat" style="--score: .547">0.547</td><td class="heat" style="--score: .403">0.403</td><td class="heat" style="--score: .407">0.407</td><td class="heat" style="--score: .508">0.508</td><td class="heat" style="--score: .419">0.419</td><td class="heat" style="--score: .407">0.407</td><td class="heat" style="--score: .401">0.401</td></tr>
+                <tr><td>Tucano2-qwen-3.7B-Instruct</td><td class="heat" style="--score: .572">0.572</td><td class="heat" style="--score: .584">0.584</td><td class="heat" style="--score: .652">0.652</td><td class="heat" style="--score: .604">0.604</td><td class="heat" style="--score: .587">0.587</td><td class="heat" style="--score: .600">0.600</td><td class="heat" style="--score: .582">0.582</td><td class="heat" style="--score: .510">0.510</td><td class="heat" style="--score: .547">0.547</td></tr>
+                <tr class="best-row"><td>gemini-3-flash</td><td class="heat" style="--score: .873">0.873</td><td class="heat" style="--score: .900">0.900</td><td class="heat" style="--score: .878">0.878</td><td class="heat" style="--score: .899">0.899</td><td class="heat" style="--score: .922">0.922</td><td class="heat" style="--score: .808">0.808</td><td class="heat" style="--score: .909">0.909</td><td class="heat" style="--score: .927">0.927</td><td class="heat" style="--score: .860">0.860</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="table-block" data-result-block="high-school-domain">
+          <h3>High School Domain-Level EM</h3>
+          <p>
+            Domain-level EM performance on the High-School split of the Portuguese-MMLU Full Dataset
+            under the 5-shot setting. Heatmap intensity indicates relative performance within each
+            domain.
+          </p>
+          <div class="data-table domain-table" role="region" aria-label="High School domain-level EM table" tabindex="0">
+          <table class="sortable-table">
+            <thead>
+              <tr>
+                <th>Model</th>
+                <th>Health and Biological Sciences</th>
+                <th>Humanities</th>
+                <th>Languages</th>
+                <th>STEM</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr><td>Llama-3.2-1B-Instruct</td><td class="heat" style="--score: .286">0.286</td><td class="heat" style="--score: .376">0.376</td><td class="heat" style="--score: .290">0.290</td><td class="heat" style="--score: .245">0.245</td></tr>
+              <tr><td>Llama-3.2-3B-Instruct</td><td class="heat" style="--score: .595">0.595</td><td class="heat" style="--score: .681">0.681</td><td class="heat" style="--score: .493">0.493</td><td class="heat" style="--score: .241">0.241</td></tr>
+              <tr><td>Llama-3.1-8B-Instruct</td><td class="heat" style="--score: .772">0.772</td><td class="heat" style="--score: .807">0.807</td><td class="heat" style="--score: .587">0.587</td><td class="heat" style="--score: .281">0.281</td></tr>
+              <tr><td>Qwen3.5-0.8B</td><td class="heat" style="--score: .413">0.413</td><td class="heat" style="--score: .464">0.464</td><td class="heat" style="--score: .365">0.365</td><td class="heat" style="--score: .217">0.217</td></tr>
+              <tr><td>Qwen3.5-2B</td><td class="heat" style="--score: .695">0.695</td><td class="heat" style="--score: .721">0.721</td><td class="heat" style="--score: .527">0.527</td><td class="heat" style="--score: .266">0.266</td></tr>
+              <tr><td>Qwen3.5-4B</td><td class="heat" style="--score: .737">0.737</td><td class="heat" style="--score: .678">0.678</td><td class="heat" style="--score: .406">0.406</td><td class="heat" style="--score: .236">0.236</td></tr>
+              <tr><td>Qwen3.5-9B</td><td class="heat" style="--score: .788">0.788</td><td class="heat" style="--score: .749">0.749</td><td class="heat" style="--score: .474">0.474</td><td class="heat" style="--score: .349">0.349</td></tr>
+              <tr><td>Qwen3.5-35B-A3B</td><td class="heat" style="--score: .807">0.807</td><td class="heat" style="--score: .802">0.802</td><td class="heat" style="--score: .514">0.514</td><td class="heat" style="--score: .339">0.339</td></tr>
+              <tr><td>Gemma-4-E2B-it</td><td class="heat" style="--score: .683">0.683</td><td class="heat" style="--score: .763">0.763</td><td class="heat" style="--score: .590">0.590</td><td class="heat" style="--score: .273">0.273</td></tr>
+              <tr><td>Gemma-4-E4B-it</td><td class="heat" style="--score: .861">0.861</td><td class="heat" style="--score: .869">0.869</td><td class="heat" style="--score: .711">0.711</td><td class="heat" style="--score: .349">0.349</td></tr>
+              <tr><td>Gemma-4-26B-A4B-it</td><td class="heat" style="--score: .915">0.915</td><td class="heat" style="--score: .932">0.932</td><td class="heat" style="--score: .802">0.802</td><td class="heat" style="--score: .466">0.466</td></tr>
+              <tr class="best-row"><td>Gemma-4-31B-it</td><td class="heat" style="--score: .931">0.931</td><td class="heat" style="--score: .953">0.953</td><td class="heat" style="--score: .847">0.847</td><td class="heat" style="--score: .539">0.539</td></tr>
+              <tr><td>Phi-4</td><td class="heat" style="--score: .865">0.865</td><td class="heat" style="--score: .896">0.896</td><td class="heat" style="--score: .703">0.703</td><td class="heat" style="--score: .367">0.367</td></tr>
+              <tr><td>Nemotron-3-Nano-4B</td><td class="heat" style="--score: .788">0.788</td><td class="heat" style="--score: .699">0.699</td><td class="heat" style="--score: .580">0.580</td><td class="heat" style="--score: .529">0.529</td></tr>
+              <tr><td>Tucano2-qwen-0.5B-Instruct</td><td class="heat" style="--score: .405">0.405</td><td class="heat" style="--score: .527">0.527</td><td class="heat" style="--score: .361">0.361</td><td class="heat" style="--score: .208">0.208</td></tr>
+              <tr><td>Tucano2-qwen-1.5B-Instruct</td><td class="heat" style="--score: .649">0.649</td><td class="heat" style="--score: .362">0.362</td><td class="heat" style="--score: .416">0.416</td><td class="heat" style="--score: .249">0.249</td></tr>
+              <tr><td>Tucano2-qwen-3.7B-Instruct</td><td class="heat" style="--score: .846">0.846</td><td class="heat" style="--score: .860">0.860</td><td class="heat" style="--score: .612">0.612</td><td class="heat" style="--score: .307">0.307</td></tr>
+              <tr class="best-row"><td>gemini-3-flash</td><td class="heat" style="--score: .958">0.958</td><td class="heat" style="--score: .969">0.969</td><td class="heat" style="--score: .883">0.883</td><td class="heat" style="--score: .639">0.639</td></tr>
+            </tbody>
+          </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="section tinted">
+        <p class="section-label">Pipeline</p>
+        <div class="section-heading">
+          <h2>From exam PDFs and answer keys to structured benchmark items.</h2>
+          <p>
+            Exam documents and answer keys are processed through independent extraction workflows,
+            followed by alignment and normalization stages that produce the final dataset.
+          </p>
+        </div>
+        <figure class="wide-figure pipeline-figure">
+          <img
+            src="assets/fluxogram_processing.png"
+            alt="Portuguese-MMLU data processing pipeline from PDFs and answer keys to validated structured samples."
+            loading="lazy"
+          >
+          <figcaption>Overview of the Portuguese-MMLU data processing pipeline.</figcaption>
+        </figure>
+      </section>
+
+      <section id="citation" class="section narrow">
+        <p class="section-label">Citation</p>
+        <h2>Paper available on OpenReview.</h2>
+        <p>
+          Download the current paper PDF from
+          <a href="https://openreview.net/pdf?id=2FpqhqcNnu" target="_blank" rel="noopener">OpenReview</a>.
+          The dataset collection is available on
+          <a href="https://huggingface.co/collections/mmlu-pt/mmlu-pt-dataset" target="_blank" rel="noopener">Hugging Face</a>.
+        </p>
+        <pre><code>@misc{portuguese_mmlu_2026,
+  title = {Portuguese-MMLU: Measuring Massive Multitask Language Understanding in Portuguese},
+  author = {TBD},
+  year = {2026},
+  url = {https://openreview.net/pdf?id=2FpqhqcNnu}
+}</code></pre>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Portuguese-MMLU</p>
+      <a href="#top">Back to top</a>
+    </footer>
+    <script>
+      const resultGroups = {
+        full: [
+          "undergraduate-full",
+          "undergraduate-domain",
+          "high-school-full",
+          "high-school-domain"
+        ],
+        hard: [
+          "undergraduate-hard",
+          "high-school-hard"
+        ]
+      };
+
+      Object.entries(resultGroups).forEach(([groupName, blockNames]) => {
+        const group = document.querySelector(`[data-result-group="${groupName}"]`);
+        if (!group) return;
+
+        blockNames.forEach((blockName) => {
+          const block = document.querySelector(`[data-result-block="${blockName}"]`);
+          if (block) group.appendChild(block);
+        });
+      });
+
+      const sortableTables = document.querySelectorAll(".sortable-table");
+
+      sortableTables.forEach((table) => {
+        const headers = table.querySelectorAll("thead th");
+        headers.forEach((header, columnIndex) => {
+          const label = header.textContent.trim();
+          const button = document.createElement("button");
+          button.type = "button";
+          button.className = "sort-button";
+          button.textContent = label;
+          button.setAttribute("aria-label", `Sort by ${label}`);
+          header.textContent = "";
+          header.appendChild(button);
+
+          button.addEventListener("click", () => {
+            const isAscending = header.getAttribute("aria-sort") !== "ascending";
+            sortTable(table, columnIndex, isAscending);
+            headers.forEach((item) => item.removeAttribute("aria-sort"));
+            header.setAttribute("aria-sort", isAscending ? "ascending" : "descending");
+          });
+        });
+      });
+
+      function sortTable(table, columnIndex, isAscending) {
+        const tbody = table.tBodies[0];
+        const rows = Array.from(tbody.rows);
+        const direction = isAscending ? 1 : -1;
+
+        rows.sort((rowA, rowB) => {
+          const valueA = getCellValue(rowA.cells[columnIndex]);
+          const valueB = getCellValue(rowB.cells[columnIndex]);
+          const numberA = Number(valueA);
+          const numberB = Number(valueB);
+
+          if (!Number.isNaN(numberA) && !Number.isNaN(numberB)) {
+            return (numberA - numberB) * direction;
+          }
+
+          return valueA.localeCompare(valueB, undefined, {
+            numeric: true,
+            sensitivity: "base"
+          }) * direction;
+        });
+
+        rows.forEach((row) => tbody.appendChild(row));
+      }
+
+      function getCellValue(cell) {
+        return cell ? cell.textContent.trim() : "";
+      }
+    </script>
+  </body>
+</html>
