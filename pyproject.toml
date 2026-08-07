@@ -1,7 +1,34 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "mmlu-pt"
 version = "0.1.0"
-description = "Add your description here"
+description = "Pipeline de curadoria de questoes MCQA em portugues com NVIDIA NeMo Curator"
 readme = "README.md"
-requires-python = ">=3.12"
-dependencies = []
+requires-python = ">=3.12,<3.13"
+dependencies = [
+    "nemo-curator[text_cuda12]==1.3.0",
+    "pydantic>=2.0",
+    "vllm==0.15.1; platform_machine == 'x86_64' and platform_system == 'Linux'",
+]
+
+[project.scripts]
+mmlu-pt = "mmlu_pt.cli:main"
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-m 'not gpu and not acceptance'"
+markers = [
+    "gpu: requer GPU NVIDIA e as dependencias CUDA do NeMo Curator",
+    "acceptance: usa o snapshot externo completo de CSVs",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mmlu_pt"]

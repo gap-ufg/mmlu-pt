@@ -1,0 +1,78 @@
+source_root: /home/aluno_paulosantana/repositories/cemig/buckets/web-crowlers-vestibulares-a
+
+sources:
+  - path: afa/afa_fixed.csv
+    exam: AFA
+    academic_level: high_school
+
+  - path: bacen/bacen_questions.csv
+    exam: BACEN
+    academic_level: undergraduate
+
+  - path: bluex/bluex_clean_fixed.csv
+    exam: BLUEX
+    academic_level: high_school
+
+  - path: bndes/questions_agg_limpo.csv
+    exam: BNDES
+    academic_level: undergraduate
+
+  - path: cfces/cfces_questions.csv
+    exam: CFCES
+    academic_level: undergraduate
+
+  - path: cnu/cnu_all_questions_2024.csv
+    exam: CNU
+    academic_level: undergraduate
+
+  - path: comvest/comvest_fixed.csv
+    exam: COMVEST
+    academic_level: high_school
+
+  - path: enade/enade_all_questions.csv
+    exam: ENADE
+    academic_level: undergraduate
+
+  - path: enam/enam_provas.csv
+    exam: ENAM
+    academic_level: undergraduate
+
+  - path: enem2009-2017/enem0917_clean.csv
+    exam: ENEM
+    academic_level: high_school
+
+  - path: enem2018-2021/enem_questions.csv
+    exam: ENEM
+    academic_level: high_school
+
+  - path: enem2022-2023/enem22-23.csv
+    exam: ENEM
+    academic_level: high_school
+
+  - path: fuvest/fuvest_questions.csv
+    exam: FUVEST
+    academic_level: high_school
+
+  - path: ime/ime_all_questions.csv
+    exam: IME
+    academic_level: high_school
+
+  - path: oab/oab_questions.csv
+    exam: OAB
+    academic_level: undergraduate
+
+  - path: obi/obi_final.csv
+    exam: OBI
+    academic_level: high_school
+
+  - path: poscomp/poscomp_all_csvs_pos_processed_no_img.csv
+    exam: POSCOMP
+    academic_level: undergraduate
+
+  - path: residencia-usp-unicamp/residencia_questions.csv
+    exam: RESIDENCIA_USP_UNICAMP
+    academic_level: undergraduate
+
+  - path: revalida/revalida_questions.csv
+    exam: REVALIDA
+    academic_level: undergraduate

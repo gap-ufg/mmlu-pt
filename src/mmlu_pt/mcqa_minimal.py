@@ -1,0 +1,117 @@
+import ast
+from numbers import Integral
+import re
+from string import ascii_uppercase
+from typing import Any
+import warnings
+
+_LATEX_START = re.compile(r"(\\+)([A-Za-z])")
+_VALID_ANSWERS = set("ABCDE")
+
+PUBLIC_FIELDS = [
+    "exam",
+    "exam_edition",
+    "exam_url",
+    # "num_questions",
+    "num",
+    "question",
+    "choices",
+    "answer",
+    # "url",
+    "academic_level",
+]
+
+
+def keep_question(statement: Any) -> Any:
+    """Renomeia statement sem alterar seu conteúdo."""
+    return statement
+
+def parse_alternatives(raw: Any) -> dict[str, Any]:
+    """Converte o literal Python legado em uma estrutura fail-closed."""
+    try:
+        if isinstance(raw, dict):
+            parsed = raw
+        elif isinstance(raw, str):
+            fixed = raw.replace("\r\n", "\\n").replace("\n", "\\n")
+
+            def make_even(match: re.Match[str]) -> str:
+                slashes, letter = match.groups()
+                if len(slashes) % 2 == 1:
+                    slashes += "\\"
+                return slashes + letter
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore", SyntaxWarning)
+                parsed = ast.literal_eval(_LATEX_START.sub(make_even, fixed))
+        else:
+            return {"choices": [], "labels": [], "parse_error": True}
+    except (MemoryError, SyntaxError, TypeError, ValueError):
+        return {"choices": [], "labels": [], "parse_error": True}
+
+    if not isinstance(parsed, dict):
+        return {"choices": [], "labels": [], "parse_error": True}
+    choices = parsed.get("text")
+    labels = parsed.get("label")
+    return {
+        "choices": choices if isinstance(choices, list) else [],
+        "labels": labels if isinstance(labels, list) else [],
+        "parse_error": not isinstance(choices, list) or not isinstance(labels, list),
+    }
+
+
+def normalize_answer(answer: Any) -> int:
+    if isinstance(answer, str) and answer in _VALID_ANSWERS:
+        return ascii_uppercase.index(answer)
+    return -1
+
+def extract_choices(parsed: Any) -> list[str]:
+    if isinstance(parsed, dict) and isinstance(parsed.get("choices"), list):
+        choices = parsed["choices"]
+        if all(isinstance(choice, str) for choice in choices):
+            return choices
+    return []
+
+
+def has_matching_alternative_lengths(parsed: Any) -> bool:
+    """Mantém questões com a mesma quantidade de alternativas e labels."""
+    if not isinstance(parsed, dict):
+        return False
+
+    choices = parsed.get("choices")
+    labels = parsed.get("labels")
+    return (
+        isinstance(choices, list)
+        and isinstance(labels, list)
+        and len(choices) == len(labels)
+    )
+
+
+def has_described_choices(choices: Any) -> bool:
+    """Mantém apenas questões com alternativas não vazias."""
+    if isinstance(choices, (str, bytes, dict)):
+        return False
+    try:
+        values = list(choices)
+    except TypeError:
+        return False
+    return bool(values) and all(isinstance(choice, str) and bool(choice.strip()) for choice in values)
+
+
+def has_supported_choice_count(choices: Any) -> bool:
+    """Mantém apenas questões com quatro ou cinco alternativas."""
+    if isinstance(choices, (str, bytes, dict)):
+        return False
+    try:
+        return 4 <= len(choices) <= 5
+    except TypeError:
+        return False
+
+
+def has_minimum_question_length(question: Any) -> bool:
+    """Mantém apenas questões com pelo menos 20 caracteres."""
+    return isinstance(question, str) and len(question.strip()) >= 20
+
+
+def has_answer(answer: Any) -> bool:
+    """Mantém apenas questões com uma resposta normalizada válida."""
+    return isinstance(answer, Integral) and not isinstance(answer, bool) and answer >= 0
