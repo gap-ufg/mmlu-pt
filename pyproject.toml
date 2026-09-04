@@ -14,20 +14,14 @@ dependencies = [
     "vllm==0.15.1; platform_machine == 'x86_64' and platform_system == 'Linux'",
 ]
 
-[project.scripts]
-mmlu-pt = "mmlu_pt.cli:main"
-
 [dependency-groups]
-dev = [
-    "pytest>=8.0",
-]
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
-addopts = "-m 'not gpu and not acceptance'"
-markers = [
-    "gpu: requer GPU NVIDIA e as dependencias CUDA do NeMo Curator",
-    "acceptance: usa o snapshot externo completo de CSVs",
+notebook = [
+    "ipykernel>=6.30",
+    "jupyterlab>=4.4",
+    "matplotlib>=3.10",
+    "nbconvert>=7.16",
+    "nbformat>=5.10",
+    "seaborn>=0.13",
 ]
 
 [tool.hatch.build.targets.wheel]

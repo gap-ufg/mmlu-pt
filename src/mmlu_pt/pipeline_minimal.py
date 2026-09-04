@@ -1,5 +1,9 @@
-import argparse
 import os
+
+# Evita que o Ray recrie o ambiente gerenciado pelo uv em /tmp para cada execução.
+os.environ.setdefault("RAY_ENABLE_UV_RUN_RUNTIME_ENV", "0")
+
+import argparse  # noqa: I001
 from pathlib import Path
 
 from mmlu_pt.utils.pipeline_utils import (
@@ -8,12 +12,10 @@ from mmlu_pt.utils.pipeline_utils import (
     print_stage_record_counts,
 )
 
-# Evita que o Ray recrie o ambiente gerenciado pelo uv em /tmp para cada execução.
-os.environ.setdefault("RAY_ENABLE_UV_RUN_RUNTIME_ENV", "0")
-
 from nemo_curator.core.client import RayClient
 from nemo_curator.pipeline import Pipeline
-from nemo_curator.stages.text.filters import Filter
+from nemo_curator.stages.text.filters import Filter, ScoreFilter
+from nemo_curator.stages.text.filters.heuristic import WordCountFilter
 from nemo_curator.stages.text.io.reader import JsonlReader
 from nemo_curator.stages.text.io.writer import JsonlWriter
 from nemo_curator.stages.text.modifiers import Modify
@@ -24,7 +26,6 @@ from mmlu_pt.mcqa_minimal import (
     has_answer,
     has_described_choices,
     has_matching_alternative_lengths,
-    has_minimum_question_length,
     has_supported_choice_count,
     keep_question,
     normalize_answer,
@@ -35,7 +36,8 @@ from mmlu_pt.utils.manifest import read_manifest_file
 OUTPUT_DIR = Path("output").resolve()
 ORIGINAL_DIR = OUTPUT_DIR / "01 - original"
 READ_DIR = OUTPUT_DIR / "02 - read"
-FILTERED_DIR = OUTPUT_DIR / "03 - filtered"
+PRE_WORD_FILTER_DIR = OUTPUT_DIR / "03 - pre-word-filter"
+FILTERED_DIR = OUTPUT_DIR / "04 - filtered"
 DEFAULT_MANIFEST_FILE = Path("config/sources.yaml")
 
 
@@ -93,9 +95,20 @@ def create_pipeline() -> Pipeline:
                 has_answer,
                 filter_field="answer",
             ),
-            Filter(
-                has_minimum_question_length,
-                filter_field="question",
+            JsonlWriter(
+                path=str(PRE_WORD_FILTER_DIR),
+                fields=PUBLIC_FIELDS,
+                write_kwargs={"index": False},
+                mode="overwrite",
+            ),
+            IntermediateJsonlReader(),
+            ScoreFilter(
+                filter_obj=WordCountFilter(
+                    min_words=4,
+                    max_words=1_000,
+                    lang="pt",
+                ),
+                text_field="question",
             ),
             JsonlWriter(
                 path=str(FILTERED_DIR),

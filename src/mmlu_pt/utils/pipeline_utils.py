@@ -1,15 +1,15 @@
+import shutil
 from collections import defaultdict
 from pathlib import Path
-import shutil
 
 from nemo_curator.pipeline import Pipeline
 from nemo_curator.stages.file_partitioning import FilePartitioningStage
-from nemo_curator.tasks import DocumentBatch, FileGroupTask, Task
+from nemo_curator.stages.text.filters import Filter, ScoreFilter
 from nemo_curator.stages.text.io.reader.base import BaseReader
 from nemo_curator.stages.text.io.reader.jsonl import JsonlReaderStage
 from nemo_curator.stages.text.io.writer.base import BaseWriter
-from nemo_curator.stages.text.filters import Filter
 from nemo_curator.stages.text.modifiers import Modify
+from nemo_curator.tasks import DocumentBatch, FileGroupTask, Task
 from tqdm import tqdm
 
 from mmlu_pt.utils.csv import source_to_jsonl
@@ -77,6 +77,9 @@ def _stage_label(stage: object) -> str:
     if isinstance(stage, Filter):
         names = [_callable_name(filter_fn) for filter_fn in stage.filter_fn]
         return f"Filter[{', '.join(names)}]"
+    if isinstance(stage, ScoreFilter):
+        names = [_callable_name(filter_obj) for filter_obj in stage.filter_obj]
+        return f"ScoreFilter[{', '.join(names)}]"
     if isinstance(stage, Modify):
         names = [_callable_name(modifier_fn) for modifier_fn in stage.modifier_fn]
         return f"Modify[{', '.join(names)}]"

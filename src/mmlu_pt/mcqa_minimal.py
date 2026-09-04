@@ -1,9 +1,9 @@
 import ast
-from numbers import Integral
 import re
+import warnings
+from numbers import Integral
 from string import ascii_uppercase
 from typing import Any
-import warnings
 
 _LATEX_START = re.compile(r"(\\+)([A-Za-z])")
 _VALID_ANSWERS = set("ABCDE")
@@ -105,11 +105,6 @@ def has_supported_choice_count(choices: Any) -> bool:
         return 4 <= len(choices) <= 5
     except TypeError:
         return False
-
-
-def has_minimum_question_length(question: Any) -> bool:
-    """Mantém apenas questões com pelo menos 20 caracteres."""
-    return isinstance(question, str) and len(question.strip()) >= 20
 
 
 def has_answer(answer: Any) -> bool:

@@ -6,7 +6,6 @@ from typing import Annotated, Literal
 from omegaconf import OmegaConf
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints
 
-
 NonEmptyString = Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)]
 
 
