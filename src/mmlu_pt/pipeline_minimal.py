@@ -1,4 +1,5 @@
 import os
+import shutil
 
 # Evita que o Ray recrie o ambiente gerenciado pelo uv em /tmp para cada execução.
 os.environ.setdefault("RAY_ENABLE_UV_RUN_RUNTIME_ENV", "0")
@@ -6,38 +7,25 @@ os.environ.setdefault("RAY_ENABLE_UV_RUN_RUNTIME_ENV", "0")
 import argparse  # noqa: I001
 from pathlib import Path
 
+from nemo_curator.core.client import RayClient
+
+from mmlu_pt.pipelines.definition import (
+    DEDUPLICATION_WORK_DIR,
+    ORIGINAL_DIR,
+    create_deduplication_input_pipeline,
+    create_duplicate_removal_workflow,
+    create_exact_deduplication_workflow,
+    create_pipeline,
+)
+from mmlu_pt.utils.manifest import read_manifest_file
 from mmlu_pt.utils.pipeline_utils import (
-    IntermediateJsonlReader,
+    get_stage_record_counts,
     prepare_sources_for_processing,
+    print_duplicate_removal_summary,
+    print_exact_deduplication_summary,
     print_stage_record_counts,
 )
 
-from nemo_curator.core.client import RayClient
-from nemo_curator.pipeline import Pipeline
-from nemo_curator.stages.text.filters import Filter, ScoreFilter
-from nemo_curator.stages.text.filters.heuristic import WordCountFilter
-from nemo_curator.stages.text.io.reader import JsonlReader
-from nemo_curator.stages.text.io.writer import JsonlWriter
-from nemo_curator.stages.text.modifiers import Modify
-
-from mmlu_pt.mcqa_minimal import (
-    PUBLIC_FIELDS,
-    extract_choices,
-    has_answer,
-    has_described_choices,
-    has_matching_alternative_lengths,
-    has_supported_choice_count,
-    keep_question,
-    normalize_answer,
-    parse_alternatives,
-)
-from mmlu_pt.utils.manifest import read_manifest_file
-
-OUTPUT_DIR = Path("output").resolve()
-ORIGINAL_DIR = OUTPUT_DIR / "01 - original"
-READ_DIR = OUTPUT_DIR / "02 - read"
-PRE_WORD_FILTER_DIR = OUTPUT_DIR / "03 - pre-word-filter"
-FILTERED_DIR = OUTPUT_DIR / "04 - filtered"
 DEFAULT_MANIFEST_FILE = Path("config/sources.yaml")
 
 
@@ -55,84 +43,58 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--clean-original-dir",
         action=argparse.BooleanOptionalAction,
-        default=True,
-        help="Limpa ORIGINAL_DIR antes de preparar as fontes (padrão: habilitado).",
+        default=False,
+        help="Limpa ORIGINAL_DIR antes de preparar as fontes (padrão: desabilitado).",
     )
     return parser
 
 
-def create_pipeline() -> Pipeline:
-    """Cria o pipeline completo com escrita JSONL intermediária."""
-    return Pipeline(
-        name="mmlu_pt",
-        description="Read, normalize and filter the MMLU-PT dataset",
-        stages=[
-            JsonlReader(file_paths=str(ORIGINAL_DIR)),
-            Modify(keep_question, input_fields="statement", output_fields="question"),
-            Modify(parse_alternatives, input_fields="alternatives", output_fields="parsed"),
-            Modify(normalize_answer, input_fields="answer", output_fields="answer"),
-            Modify(extract_choices, input_fields="parsed", output_fields="choices"),
-            JsonlWriter(
-                path=str(READ_DIR),
-                # fields=PUBLIC_FIELDS,
-                write_kwargs={"index": False},
-                mode="overwrite",
-            ),
-            IntermediateJsonlReader(),
-            Filter(
-                has_matching_alternative_lengths,
-                filter_field="parsed",
-            ),
-            Filter(
-                has_described_choices,
-                filter_field="choices",
-            ),
-            Filter(
-                has_supported_choice_count,
-                filter_field="choices",
-            ),
-            Filter(
-                has_answer,
-                filter_field="answer",
-            ),
-            JsonlWriter(
-                path=str(PRE_WORD_FILTER_DIR),
-                fields=PUBLIC_FIELDS,
-                write_kwargs={"index": False},
-                mode="overwrite",
-            ),
-            IntermediateJsonlReader(),
-            ScoreFilter(
-                filter_obj=WordCountFilter(
-                    min_words=4,
-                    max_words=1_000,
-                    lang="pt",
-                ),
-                text_field="question",
-            ),
-            JsonlWriter(
-                path=str(FILTERED_DIR),
-                fields=PUBLIC_FIELDS,
-                write_kwargs={"index": False},
-                mode="overwrite",
-            ),
-        ],
-    )
-
-def main(manifest_file: Path = DEFAULT_MANIFEST_FILE, clean_original_dir: bool = True) -> int:
+def main(manifest_file: Path = DEFAULT_MANIFEST_FILE, clean_original_dir: bool = False) -> int:
     manifest_file = manifest_file.resolve()
     manifest = read_manifest_file(manifest_file)
 
     prepare_sources_for_processing(ORIGINAL_DIR, clean_original_dir, manifest)
+    if DEDUPLICATION_WORK_DIR.exists():
+        shutil.rmtree(DEDUPLICATION_WORK_DIR)
 
     with RayClient(include_dashboard=False):
         pipeline = create_pipeline()
-        results = pipeline.run()
-        print_stage_record_counts(pipeline, results)
+        pipeline_results = pipeline.run()
+
+        deduplication_input_pipeline = create_deduplication_input_pipeline()
+        deduplication_input_results = deduplication_input_pipeline.run()
+
+        exact_deduplication_workflow = create_exact_deduplication_workflow()
+        exact_deduplication_results = exact_deduplication_workflow.run()
+
+        duplicate_removal_workflow = create_duplicate_removal_workflow()
+        duplicate_removal_results = duplicate_removal_workflow.run()
+
+    deduplication_input_counts = get_stage_record_counts(
+        deduplication_input_pipeline,
+        deduplication_input_results,
+    )
+    deduplication_input_records = (
+        deduplication_input_counts[-1][2] if deduplication_input_counts else 0
+    )
+
+    print_stage_record_counts(pipeline, pipeline_results)
+    print_stage_record_counts(
+        deduplication_input_pipeline,
+        deduplication_input_results,
+    )
+    print_exact_deduplication_summary(
+        exact_deduplication_results,
+        deduplication_input_records,
+    )
+    print_duplicate_removal_summary(
+        duplicate_removal_results,
+        deduplication_input_records,
+    )
 
     print(
         "Pipeline completed successfully! "
-        f"Processed {len(results) if results else 0} tasks."
+        f"Processed {len(pipeline_results) if pipeline_results else 0} tasks."
     )
     return 0
 

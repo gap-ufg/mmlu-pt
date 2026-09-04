@@ -1,11 +1,13 @@
 import ast
 import re
+import unicodedata
 import warnings
 from numbers import Integral
 from string import ascii_uppercase
 from typing import Any
 
 _LATEX_START = re.compile(r"(\\+)([A-Za-z])")
+_WHITESPACE = re.compile(r"\s+")
 _VALID_ANSWERS = set("ABCDE")
 
 PUBLIC_FIELDS = [
@@ -25,6 +27,15 @@ PUBLIC_FIELDS = [
 def keep_question(statement: Any) -> Any:
     """Renomeia statement sem alterar seu conteúdo."""
     return statement
+
+
+def normalize_question_for_dedup(question: Any) -> str:
+    """Normaliza diferenças mecânicas antes da deduplicação exata."""
+    if not isinstance(question, str):
+        return ""
+    normalized = unicodedata.normalize("NFKC", question).casefold()
+    return _WHITESPACE.sub(" ", normalized).strip()
+
 
 def parse_alternatives(raw: Any) -> dict[str, Any]:
     """Converte o literal Python legado em uma estrutura fail-closed."""

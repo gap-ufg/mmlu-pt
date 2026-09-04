@@ -3,6 +3,7 @@ from collections import defaultdict
 from pathlib import Path
 
 from nemo_curator.pipeline import Pipeline
+from nemo_curator.pipeline.workflow import WorkflowRunResult
 from nemo_curator.stages.file_partitioning import FilePartitioningStage
 from nemo_curator.stages.text.filters import Filter, ScoreFilter
 from nemo_curator.stages.text.io.reader.base import BaseReader
@@ -120,6 +121,47 @@ def print_stage_record_counts(pipeline: Pipeline, results: list[Task] | None) ->
         f"{valid} válidos ({valid_percentage:.2f}%); "
         f"{invalid} inválidos ({invalid_percentage:.2f}%)."
     )
+
+
+def print_exact_deduplication_summary(
+    result: WorkflowRunResult,
+    input_records: int,
+) -> None:
+    """Exibe o total de chaves duplicadas identificado pelo workflow exato."""
+    duplicates = int(result.metadata.get("num_duplicates", 0))
+    unique = max(input_records - duplicates, 0)
+    duplicate_percentage = duplicates / input_records * 100 if input_records else 0.0
+    print("\nWorkflow: exact_deduplication")
+    print(
+        f"{'Stage':<30} | {'Analisados':>10} | {'Duplicados':>10} | "
+        f"{'Únicos':>10} | {'Duplicados (%)':>15}"
+    )
+    print(f"{'-' * 30}-+-{'-' * 10}-+-{'-' * 10}-+-{'-' * 10}-+-{'-' * 15}")
+    print(
+        f"{'ExactDuplicateIdentification':<30} | {input_records:>10} | "
+        f"{duplicates:>10} | {unique:>10} | {duplicate_percentage:>14.2f}%"
+    )
+
+
+def print_duplicate_removal_summary(
+    result: WorkflowRunResult,
+    input_records: int,
+) -> None:
+    """Exibe quantos documentos foram removidos pelo workflow de deduplicação."""
+    removed = int(result.metadata.get("num_duplicates_removed", 0))
+    output_records = max(input_records - removed, 0)
+    removed_percentage = removed / input_records * 100 if input_records else 0.0
+    print("\nWorkflow: text_duplicates_removal")
+    print(
+        f"{'Stage':<30} | {'Entraram':>10} | {'Saíram':>10} | "
+        f"{'Removidos':>10} | {'Removidos (%)':>13}"
+    )
+    print(f"{'-' * 30}-+-{'-' * 10}-+-{'-' * 10}-+-{'-' * 10}-+-{'-' * 13}")
+    print(
+        f"{'TextDuplicatesRemoval':<30} | {input_records:>10} | "
+        f"{output_records:>10} | {removed:>10} | {removed_percentage:>12.2f}%"
+    )
+
 
 class IntermediateJsonlReader(JsonlReaderStage):
     """Relê a saída intermediária preservando as métricas anteriores."""
