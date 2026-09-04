@@ -75,6 +75,7 @@ def normalize_answer(answer: Any) -> int:
         return ascii_uppercase.index(answer)
     return -1
 
+
 def extract_choices(parsed: Any) -> list[str]:
     if isinstance(parsed, dict) and isinstance(parsed.get("choices"), list):
         choices = parsed["choices"]
@@ -121,3 +122,17 @@ def has_supported_choice_count(choices: Any) -> bool:
 def has_answer(answer: Any) -> bool:
     """Mantém apenas questões com uma resposta normalizada válida."""
     return isinstance(answer, Integral) and not isinstance(answer, bool) and answer >= 0
+
+
+def group_answer_and_choices(*, answer: Any, choices: Any) -> tuple[Any, Any]:
+    """Agrupa os campos necessários para validar o índice da resposta."""
+    return answer, choices
+
+
+def has_answer_in_bounds(answer_and_choices: Any) -> bool:
+    """Mantém questões cujo índice de resposta existe nas alternativas."""
+    if not isinstance(answer_and_choices, (list, tuple)) or len(answer_and_choices) != 2:
+        return False
+
+    answer, choices = answer_and_choices
+    return has_answer(answer) and isinstance(choices, list) and answer < len(choices)

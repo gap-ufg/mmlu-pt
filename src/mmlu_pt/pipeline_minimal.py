@@ -15,7 +15,7 @@ from mmlu_pt.pipelines.definition import (
     create_deduplication_input_pipeline,
     create_duplicate_removal_workflow,
     create_exact_deduplication_workflow,
-    create_pipeline,
+    create_normalization_and_filtering_pipeline,
 )
 from mmlu_pt.utils.manifest import read_manifest_file
 from mmlu_pt.utils.pipeline_utils import (
@@ -58,7 +58,7 @@ def main(manifest_file: Path = DEFAULT_MANIFEST_FILE, clean_original_dir: bool =
         shutil.rmtree(DEDUPLICATION_WORK_DIR)
 
     with RayClient(include_dashboard=False):
-        pipeline = create_pipeline()
+        pipeline = create_normalization_and_filtering_pipeline()
         pipeline_results = pipeline.run()
 
         deduplication_input_pipeline = create_deduplication_input_pipeline()

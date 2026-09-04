@@ -14,7 +14,8 @@ from nemo_curator.stages.text.modifiers import Modify
 from mmlu_pt.mcqa_minimal import (
     PUBLIC_FIELDS,
     extract_choices,
-    has_answer,
+    group_answer_and_choices,
+    has_answer_in_bounds,
     has_described_choices,
     has_matching_alternative_lengths,
     has_supported_choice_count,
@@ -37,11 +38,12 @@ EXACT_DUPLICATE_IDS_DIR = DEDUPLICATION_RESULTS_DIR / "ExactDuplicateIds"
 EXACT_ID_GENERATOR_PATH = DEDUPLICATION_RESULTS_DIR / "exact_id_generator.json"
 DEDUPLICATED_DIR = OUTPUT_DIR / "05 - deduplicated"
 NORMALIZED_QUESTION_FIELD = "question_normalized"
+ANSWER_AND_CHOICES_FIELD = "answer_and_choices"
 DEDUPLICATION_FIELDS = [*PUBLIC_FIELDS, NORMALIZED_QUESTION_FIELD]
 DEDUPLICATION_INPUT_BLOCKSIZE = "256MiB"
 
 
-def create_pipeline() -> Pipeline:
+def create_normalization_and_filtering_pipeline() -> Pipeline:
     """Cria o pipeline de leitura, normalização e filtragem."""
     return Pipeline(
         name="mmlu_pt",
@@ -74,9 +76,14 @@ def create_pipeline() -> Pipeline:
                 has_supported_choice_count,
                 filter_field="choices",
             ),
+            Modify(
+                group_answer_and_choices,
+                input_fields=[["answer", "choices"]],
+                output_fields=ANSWER_AND_CHOICES_FIELD,
+            ),
             Filter(
-                has_answer,
-                filter_field="answer",
+                has_answer_in_bounds,
+                filter_field=ANSWER_AND_CHOICES_FIELD,
             ),
             JsonlWriter(
                 path=str(PRE_WORD_FILTER_DIR),
