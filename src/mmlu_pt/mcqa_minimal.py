@@ -84,6 +84,11 @@ def extract_choices(parsed: Any) -> list[str]:
     return []
 
 
+def serialize_choices(choices: list[str]) -> str:
+    """Combina as alternativas em um texto para contagem de palavras."""
+    return "\n".join(choices)
+
+
 def has_matching_alternative_lengths(parsed: Any) -> bool:
     """Mantém questões com a mesma quantidade de alternativas e labels."""
     if not isinstance(parsed, dict):

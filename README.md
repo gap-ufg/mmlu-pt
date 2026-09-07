@@ -20,7 +20,7 @@ flowchart LR
     B --> C[Conversion and metadata]
     C --> D[MCQA normalization]
     D --> E[Structural validation]
-    E --> F[4 to 1,000-word filter]
+    E --> F[Question: 4 to 1,000 words<br/>Choices: up to 300 words]
     F --> G[Question normalization]
     G --> H[Exact deduplication]
     H --> I[Final JSONL]
@@ -34,7 +34,8 @@ The pipeline performs the following operations:
    and maps answers `A`–`E` to zero-based integer indices `0`–`4`.
 3. Discards records with invalid or empty alternatives, mismatched choice and
    label counts, or anything other than four or five choices.
-4. Keeps questions containing between 4 and 1,000 words, inclusive.
+4. Keeps questions containing between 4 and 1,000 words and whose combined
+   choices contain at most 300 words. All limits are inclusive.
 5. Normalizes question text with Unicode NFKC, `casefold`, and whitespace
    collapsing, then uses the result as the exact-deduplication key.
 6. Writes the final dataset with only the public fields.
@@ -134,7 +135,7 @@ uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 5
 | `1` | None | Prepare the sources |
 | `2` | `output/01 - original/` | Normalize the records |
 | `3` | `output/02 - read/` | Apply structural filters |
-| `4` | `output/03 - pre-word-filter/` | Apply the word-count filter |
+| `4` | `output/03 - pre-word-filter/` | Apply the question and choice word-count filters |
 | `5` | `output/04 - filtered/` | Run exact deduplication |
 
 The selected input directory must contain at least one JSONL file. The source
@@ -149,7 +150,7 @@ output/
 ├── 01 - original/                  # sources converted to JSONL
 ├── 02 - read/                      # normalized and auxiliary fields
 ├── 03 - pre-word-filter/           # after structural validation
-├── 04 - filtered/                  # after the word-count filter
+├── 04 - filtered/                  # after the question and choice word-count filters
 ├── exact-deduplication-work/
 │   ├── input/                      # materialized question_normalized field
 │   └── results/
@@ -186,6 +187,20 @@ limits used by the pipeline.
 ```bash
 uv sync --group notebook
 uv run jupyter lab notebooks/question_length_ablation.ipynb
+```
+
+## Choice-length analysis
+
+The
+[`notebooks/choices_length_ablation.ipynb`](notebooks/choices_length_ablation.ipynb)
+notebook evaluates maximum thresholds for the total number of words across all
+choices. It reads `output/03 - pre-word-filter/`, reports the incremental effect
+after the current question-length filter, and recommends an inclusive limit of
+300 words.
+
+```bash
+uv sync --group notebook
+uv run jupyter lab notebooks/choices_length_ablation.ipynb
 ```
 
 ## Code structure
