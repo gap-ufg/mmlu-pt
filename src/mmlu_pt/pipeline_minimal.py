@@ -11,11 +11,15 @@ from nemo_curator.core.client import RayClient
 
 from mmlu_pt.pipelines.definition import (
     DEDUPLICATION_WORK_DIR,
+    FILTERED_DIR,
     ORIGINAL_DIR,
+    PRE_WORD_FILTER_DIR,
+    READ_DIR,
+    PipelineStep,
     create_deduplication_input_pipeline,
     create_duplicate_removal_workflow,
     create_exact_deduplication_workflow,
-    create_normalization_and_filtering_pipeline,
+    create_preprocessing_pipeline,
 )
 from mmlu_pt.utils.manifest import read_manifest_file
 from mmlu_pt.utils.pipeline_utils import (
@@ -27,6 +31,12 @@ from mmlu_pt.utils.pipeline_utils import (
 )
 
 DEFAULT_MANIFEST_FILE = Path("config/sources.yaml")
+STEP_INPUT_DIRS = {
+    PipelineStep.NORMALIZE: ORIGINAL_DIR,
+    PipelineStep.STRUCTURAL_FILTER: READ_DIR,
+    PipelineStep.WORD_FILTER: PRE_WORD_FILTER_DIR,
+    PipelineStep.DEDUPLICATE: FILTERED_DIR,
+}
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -41,34 +51,83 @@ def build_parser() -> argparse.ArgumentParser:
         help="Caminho do manifest YAML (padrão: config/sources.yaml).",
     )
     parser.add_argument(
-        "--clean-original-dir",
-        action=argparse.BooleanOptionalAction,
-        default=False,
-        help="Limpa ORIGINAL_DIR antes de preparar as fontes (padrão: desabilitado).",
+        "--resume-from-step",
+        type=int,
+        choices=tuple(step.value for step in PipelineStep),
+        default=PipelineStep.PREPARE_SOURCES.value,
+        help="Etapa inicial da execução; reutiliza o output da etapa anterior.",
     )
     return parser
 
 
-def main(manifest_file: Path = DEFAULT_MANIFEST_FILE, clean_original_dir: bool = False) -> int:
-    manifest_file = manifest_file.resolve()
-    manifest = read_manifest_file(manifest_file)
+def _validate_resume_input(start_step: PipelineStep) -> None:
+    """Verifica se o output exigido para retomar o pipeline está disponível."""
+    if start_step == PipelineStep.PREPARE_SOURCES:
+        return
 
-    prepare_sources_for_processing(ORIGINAL_DIR, clean_original_dir, manifest)
+    input_dir = STEP_INPUT_DIRS[start_step]
+    if input_dir.is_dir() and any(input_dir.glob("*.jsonl")):
+        return
+
+    raise FileNotFoundError(
+        f"Não foi encontrado nenhum arquivo JSONL para iniciar a etapa "
+        f"{start_step.value} em: {input_dir}"
+    )
+
+
+def _run_deduplication():
+    """Executa os pipelines que produzem o output deduplicado."""
     if DEDUPLICATION_WORK_DIR.exists():
         shutil.rmtree(DEDUPLICATION_WORK_DIR)
 
+    input_pipeline = create_deduplication_input_pipeline()
+    input_results = input_pipeline.run()
+
+    exact_workflow = create_exact_deduplication_workflow()
+    exact_results = exact_workflow.run()
+
+    removal_workflow = create_duplicate_removal_workflow()
+    removal_results = removal_workflow.run()
+
+    return (
+        input_pipeline,
+        input_results,
+        exact_results,
+        removal_results,
+    )
+
+
+def main(
+    manifest_file: Path = DEFAULT_MANIFEST_FILE,
+    resume_from_step: int = PipelineStep.PREPARE_SOURCES.value,
+) -> int:
+    try:
+        start_step = PipelineStep(resume_from_step)
+    except ValueError as error:
+        valid_steps = ", ".join(str(step.value) for step in PipelineStep)
+        raise ValueError(f"resume_from_step deve ser um de: {valid_steps}") from error
+
+    _validate_resume_input(start_step)
+
+    if start_step == PipelineStep.PREPARE_SOURCES:
+        manifest_file = manifest_file.resolve()
+        manifest = read_manifest_file(manifest_file)
+        prepare_sources_for_processing(ORIGINAL_DIR, clean=True, manifest=manifest)
+
     with RayClient(include_dashboard=False):
-        pipeline = create_normalization_and_filtering_pipeline()
-        pipeline_results = pipeline.run()
+        pipeline = None
+        pipeline_results = None
+        if start_step <= PipelineStep.WORD_FILTER:
+            preprocessing_start = max(start_step, PipelineStep.NORMALIZE)
+            pipeline = create_preprocessing_pipeline(preprocessing_start)
+            pipeline_results = pipeline.run()
 
-        deduplication_input_pipeline = create_deduplication_input_pipeline()
-        deduplication_input_results = deduplication_input_pipeline.run()
-
-        exact_deduplication_workflow = create_exact_deduplication_workflow()
-        exact_deduplication_results = exact_deduplication_workflow.run()
-
-        duplicate_removal_workflow = create_duplicate_removal_workflow()
-        duplicate_removal_results = duplicate_removal_workflow.run()
+        (
+            deduplication_input_pipeline,
+            deduplication_input_results,
+            exact_deduplication_results,
+            duplicate_removal_results,
+        ) = _run_deduplication()
 
     deduplication_input_counts = get_stage_record_counts(
         deduplication_input_pipeline,
@@ -78,7 +137,8 @@ def main(manifest_file: Path = DEFAULT_MANIFEST_FILE, clean_original_dir: bool =
         deduplication_input_counts[-1][2] if deduplication_input_counts else 0
     )
 
-    print_stage_record_counts(pipeline, pipeline_results)
+    if pipeline is not None:
+        print_stage_record_counts(pipeline, pipeline_results)
     print_stage_record_counts(
         deduplication_input_pipeline,
         deduplication_input_results,
@@ -94,7 +154,7 @@ def main(manifest_file: Path = DEFAULT_MANIFEST_FILE, clean_original_dir: bool =
 
     print(
         "Pipeline completed successfully! "
-        f"Processed {len(pipeline_results) if pipeline_results else 0} tasks."
+        f"Processed {len(deduplication_input_results or [])} tasks."
     )
     return 0
 
@@ -104,6 +164,6 @@ if __name__ == "__main__":
     raise SystemExit(
         main(
             manifest_file=args.manifest_file,
-            clean_original_dir=args.clean_original_dir,
+            resume_from_step=args.resume_from_step,
         )
     )

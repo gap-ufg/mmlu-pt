@@ -112,17 +112,35 @@ Run the pipeline from the repository root:
 
 ```bash
 uv run python -m mmlu_pt.pipeline_minimal \
-  --config config/sources.yaml \
-  --clean-original-dir
+  --config config/sources.yaml
 ```
 
-`--manifest-file` is an alias for `--config`. The `--clean-original-dir` option
-removes JSONL files prepared by an earlier run. Without it, those files are
-preserved and may mix stale sources with the ones declared in the current
-manifest.
+`--manifest-file` is an alias for `--config`. Starting from step 1 recreates
+`output/01 - original/` before preparing the sources, preventing stale files
+from being mixed with the sources declared in the current manifest.
 
 The output location is fixed to `output/`, relative to the working directory.
 The exact-deduplication workspace is recreated on every run.
+
+Use `--resume-from-step` to reuse a materialized output and rerun that step and
+the following ones:
+
+```bash
+uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 5
+```
+
+| Starting step | Reused input | First operation executed |
+| --- | --- | --- |
+| `1` | None | Prepare the sources |
+| `2` | `output/01 - original/` | Normalize the records |
+| `3` | `output/02 - read/` | Apply structural filters |
+| `4` | `output/03 - pre-word-filter/` | Apply the word-count filter |
+| `5` | `output/04 - filtered/` | Run exact deduplication |
+
+The selected input directory must contain at least one JSONL file. The source
+manifest is only used when starting from step 1. Starting from step 2 reuses
+`output/01 - original/` without preparing or cleaning it. Outputs from the
+selected step onward are recreated normally.
 
 ## Outputs
 

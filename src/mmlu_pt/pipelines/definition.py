@@ -1,3 +1,4 @@
+from enum import IntEnum
 from pathlib import Path
 
 from nemo_curator.pipeline import Pipeline
@@ -43,70 +44,119 @@ DEDUPLICATION_FIELDS = [*PUBLIC_FIELDS, NORMALIZED_QUESTION_FIELD]
 DEDUPLICATION_INPUT_BLOCKSIZE = "256MiB"
 
 
-def create_normalization_and_filtering_pipeline() -> Pipeline:
-    """Cria o pipeline de leitura, normalização e filtragem."""
+class PipelineStep(IntEnum):
+    PREPARE_SOURCES = 1
+    NORMALIZE = 2
+    STRUCTURAL_FILTER = 3
+    WORD_FILTER = 4
+    DEDUPLICATE = 5
+
+
+def _normalization_stages() -> list:
+    return [
+        Modify(keep_question, input_fields="statement", output_fields="question"),
+        Modify(
+            parse_alternatives,
+            input_fields="alternatives",
+            output_fields="parsed",
+        ),
+        Modify(normalize_answer, input_fields="answer", output_fields="answer"),
+        Modify(extract_choices, input_fields="parsed", output_fields="choices"),
+        JsonlWriter(
+            path=str(READ_DIR),
+            write_kwargs={"index": False},
+            mode="overwrite",
+        ),
+    ]
+
+
+def _structural_filter_stages() -> list:
+    return [
+        Filter(
+            has_matching_alternative_lengths,
+            filter_field="parsed",
+        ),
+        Filter(
+            has_described_choices,
+            filter_field="choices",
+        ),
+        Filter(
+            has_supported_choice_count,
+            filter_field="choices",
+        ),
+        Modify(
+            group_answer_and_choices,
+            input_fields=[["answer", "choices"]],
+            output_fields=ANSWER_AND_CHOICES_FIELD,
+        ),
+        Filter(
+            has_answer_in_bounds,
+            filter_field=ANSWER_AND_CHOICES_FIELD,
+        ),
+        JsonlWriter(
+            path=str(PRE_WORD_FILTER_DIR),
+            fields=PUBLIC_FIELDS,
+            write_kwargs={"index": False},
+            mode="overwrite",
+        ),
+    ]
+
+
+def _word_filter_stages() -> list:
+    return [
+        ScoreFilter(
+            filter_obj=WordCountFilter(
+                min_words=4,
+                max_words=1_000,
+                lang="pt",
+            ),
+            text_field="question",
+        ),
+        JsonlWriter(
+            path=str(FILTERED_DIR),
+            fields=PUBLIC_FIELDS,
+            write_kwargs={"index": False},
+            mode="overwrite",
+        ),
+    ]
+
+
+def create_preprocessing_pipeline(start_step: PipelineStep) -> Pipeline:
+    """Cria o pipeline de pré-processamento a partir de uma etapa materializada."""
+    if start_step not in {
+        PipelineStep.NORMALIZE,
+        PipelineStep.STRUCTURAL_FILTER,
+        PipelineStep.WORD_FILTER,
+    }:
+        raise ValueError("O pré-processamento deve começar nas etapas 2, 3 ou 4")
+
+    stages = []
+    if start_step == PipelineStep.NORMALIZE:
+        stages.append(JsonlReader(file_paths=str(ORIGINAL_DIR)))
+        stages.extend(_normalization_stages())
+
+    if start_step <= PipelineStep.STRUCTURAL_FILTER:
+        reader = (
+            IntermediateJsonlReader()
+            if start_step == PipelineStep.NORMALIZE
+            else JsonlReader(file_paths=str(READ_DIR))
+        )
+        stages.append(reader)
+        stages.extend(_structural_filter_stages())
+
+    if start_step <= PipelineStep.WORD_FILTER:
+        reader = (
+            IntermediateJsonlReader()
+            if start_step <= PipelineStep.STRUCTURAL_FILTER
+            else JsonlReader(file_paths=str(PRE_WORD_FILTER_DIR))
+        )
+        stages.append(reader)
+        stages.extend(_word_filter_stages())
+
     return Pipeline(
         name="mmlu_pt",
         description="Read, normalize and filter the MMLU-PT dataset",
-        stages=[
-            JsonlReader(file_paths=str(ORIGINAL_DIR)),
-            Modify(keep_question, input_fields="statement", output_fields="question"),
-            Modify(
-                parse_alternatives,
-                input_fields="alternatives",
-                output_fields="parsed",
-            ),
-            Modify(normalize_answer, input_fields="answer", output_fields="answer"),
-            Modify(extract_choices, input_fields="parsed", output_fields="choices"),
-            JsonlWriter(
-                path=str(READ_DIR),
-                write_kwargs={"index": False},
-                mode="overwrite",
-            ),
-            IntermediateJsonlReader(),
-            Filter(
-                has_matching_alternative_lengths,
-                filter_field="parsed",
-            ),
-            Filter(
-                has_described_choices,
-                filter_field="choices",
-            ),
-            Filter(
-                has_supported_choice_count,
-                filter_field="choices",
-            ),
-            Modify(
-                group_answer_and_choices,
-                input_fields=[["answer", "choices"]],
-                output_fields=ANSWER_AND_CHOICES_FIELD,
-            ),
-            Filter(
-                has_answer_in_bounds,
-                filter_field=ANSWER_AND_CHOICES_FIELD,
-            ),
-            JsonlWriter(
-                path=str(PRE_WORD_FILTER_DIR),
-                fields=PUBLIC_FIELDS,
-                write_kwargs={"index": False},
-                mode="overwrite",
-            ),
-            IntermediateJsonlReader(),
-            ScoreFilter(
-                filter_obj=WordCountFilter(
-                    min_words=4,
-                    max_words=1_000,
-                    lang="pt",
-                ),
-                text_field="question",
-            ),
-            JsonlWriter(
-                path=str(FILTERED_DIR),
-                fields=PUBLIC_FIELDS,
-                write_kwargs={"index": False},
-                mode="overwrite",
-            ),
-        ],
+        stages=stages,
     )
 
 
