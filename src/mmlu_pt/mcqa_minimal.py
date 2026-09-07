@@ -89,6 +89,11 @@ def serialize_choices(choices: list[str]) -> str:
     return "\n".join(choices)
 
 
+def serialize_question_and_choices(*, question: str, choices: list[str]) -> str:
+    """Combina o enunciado e as alternativas para contagem de palavras."""
+    return "\n".join([question, *choices])
+
+
 def has_matching_alternative_lengths(parsed: Any) -> bool:
     """Mantém questões com a mesma quantidade de alternativas e labels."""
     if not isinstance(parsed, dict):

@@ -20,7 +20,7 @@ flowchart LR
     B --> C[Conversion and metadata]
     C --> D[MCQA normalization]
     D --> E[Structural validation]
-    E --> F[Question: 4 to 1,000 words<br/>Choices: up to 300 words]
+    E --> F[Question: 4 to 1,000 words<br/>Choices: up to 300 words<br/>Combined: up to 1,000 words]
     F --> G[Question normalization]
     G --> H[Exact deduplication]
     H --> I[Final JSONL]
@@ -34,8 +34,9 @@ The pipeline performs the following operations:
    and maps answers `A`–`E` to zero-based integer indices `0`–`4`.
 3. Discards records with invalid or empty alternatives, mismatched choice and
    label counts, or anything other than four or five choices.
-4. Keeps questions containing between 4 and 1,000 words and whose combined
-   choices contain at most 300 words. All limits are inclusive.
+4. Keeps questions containing between 4 and 1,000 words, whose combined
+   choices contain at most 300 words, and whose question plus choices contain
+   at most 1,000 words. All limits are inclusive and applied in that order.
 5. Normalizes question text with Unicode NFKC, `casefold`, and whitespace
    collapsing, then uses the result as the exact-deduplication key.
 6. Writes the final dataset with only the public fields.
@@ -135,7 +136,7 @@ uv run python -m mmlu_pt.pipeline_minimal --resume-from-step 5
 | `1` | None | Prepare the sources |
 | `2` | `output/01 - original/` | Normalize the records |
 | `3` | `output/02 - read/` | Apply structural filters |
-| `4` | `output/03 - pre-word-filter/` | Apply the question and choice word-count filters |
+| `4` | `output/03 - pre-word-filter/` | Apply the question, choice, and combined word-count filters |
 | `5` | `output/04 - filtered/` | Run exact deduplication |
 
 The selected input directory must contain at least one JSONL file. The source
@@ -150,7 +151,7 @@ output/
 ├── 01 - original/                  # sources converted to JSONL
 ├── 02 - read/                      # normalized and auxiliary fields
 ├── 03 - pre-word-filter/           # after structural validation
-├── 04 - filtered/                  # after the question and choice word-count filters
+├── 04 - filtered/                  # after all word-count filters
 ├── exact-deduplication-work/
 │   ├── input/                      # materialized question_normalized field
 │   └── results/
@@ -181,8 +182,8 @@ the final output directory are ignored by Git.
 The
 [`notebooks/question_length_ablation.ipynb`](notebooks/question_length_ablation.ipynb)
 notebook evaluates retention by exam and academic level across different
-word-count thresholds. It reads `output/03 - pre-word-filter/` and supports the
-limits used by the pipeline.
+word-count thresholds. It reads `output/03 - pre-word-filter/` and selects
+inclusive limits of 4 to 1,000 words for the question text.
 
 ```bash
 uv sync --group notebook
@@ -201,6 +202,20 @@ after the current question-length filter, and recommends an inclusive limit of
 ```bash
 uv sync --group notebook
 uv run jupyter lab notebooks/choices_length_ablation.ipynb
+```
+
+## Question-plus-choices length analysis
+
+The
+[`notebooks/question_choices_length_ablation.ipynb`](notebooks/question_choices_length_ablation.ipynb)
+notebook evaluates an additional maximum threshold on the combined word count
+of each question and its choices. It applies the existing inclusive question
+and choice limits first, then reports the incremental effect of candidate total
+limits and selects an inclusive combined limit of 1,000 words.
+
+```bash
+uv sync --group notebook
+uv run jupyter lab notebooks/question_choices_length_ablation.ipynb
 ```
 
 ## Code structure

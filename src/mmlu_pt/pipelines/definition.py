@@ -25,6 +25,7 @@ from mmlu_pt.mcqa_minimal import (
     normalize_question_for_dedup,
     parse_alternatives,
     serialize_choices,
+    serialize_question_and_choices,
 )
 from mmlu_pt.utils.pipeline_utils import IntermediateJsonlReader
 
@@ -42,6 +43,7 @@ DEDUPLICATED_DIR = OUTPUT_DIR / "05 - deduplicated"
 NORMALIZED_QUESTION_FIELD = "question_normalized"
 ANSWER_AND_CHOICES_FIELD = "answer_and_choices"
 SERIALIZED_CHOICES_FIELD = "choices_serialized"
+SERIALIZED_QUESTION_AND_CHOICES_FIELD = "question_and_choices_serialized"
 DEDUPLICATION_FIELDS = [*PUBLIC_FIELDS, NORMALIZED_QUESTION_FIELD]
 DEDUPLICATION_INPUT_BLOCKSIZE = "256MiB"
 
@@ -126,6 +128,19 @@ def _word_filter_stages() -> list:
                 lang="pt",
             ),
             text_field=SERIALIZED_CHOICES_FIELD,
+        ),
+        Modify(
+            serialize_question_and_choices,
+            input_fields=[["question", "choices"]],
+            output_fields=SERIALIZED_QUESTION_AND_CHOICES_FIELD,
+        ),
+        ScoreFilter(
+            filter_obj=WordCountFilter(
+                min_words=0,
+                max_words=1_000,
+                lang="pt",
+            ),
+            text_field=SERIALIZED_QUESTION_AND_CHOICES_FIELD,
         ),
         JsonlWriter(
             path=str(FILTERED_DIR),
