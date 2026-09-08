@@ -1,0 +1,22 @@
+# Development Guidelines
+
+- Prioritize simple, clean, and easy-to-understand code.
+- Implement only what is necessary for the requested task.
+- Avoid premature abstractions, speculative features, and unnecessary complexity.
+- Prefer straightforward, concrete implementations over generic or highly extensible designs.
+- Keep the main control flow explicit and easy to read from top to bottom.
+- Use small, focused functions with clear names and a single responsibility.
+- Prefer function composition over class hierarchies unless state or an external interface requires a class.
+- Use early returns to keep nesting shallow.
+- Separate configuration, construction, and execution when doing so improves clarity.
+- Move reusable supporting logic into focused modules without unnecessarily fragmenting the codebase.
+- Use module-level constants for shared structural values and defaults.
+- Add type hints primarily to function interfaces; avoid annotations that add noise without improving clarity.
+- Prefer simple, predictable return values over using exceptions for ordinary control flow.
+- Keep docstrings short and focused on intent.
+- Write comments only when needed to explain a non-obvious decision or technical constraint.
+- Maintain consistent organization and formatting, but allow a localized exception when technically necessary and explicitly justified.
+- Produce code that meets the standards expected of a senior developer.
+- Preserve the project's existing patterns when appropriate.
+- Do not create `__init__.py` files unless explicitly requested.
+- Do not implement unit tests unless explicitly requested.

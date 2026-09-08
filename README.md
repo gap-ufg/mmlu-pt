@@ -218,6 +218,75 @@ uv sync --group notebook
 uv run jupyter lab notebooks/question_choices_length_ablation.ipynb
 ```
 
+## LLM-as-a-Judge annotation
+
+The annotation CLI classifies candidate question pairs as `duplicate`,
+`related_but_distinct`, `distinct`, or `unsure`. It supports immediate,
+row-by-row requests through the Responses API and asynchronous processing
+through the Batch API. Install its dependencies and configure the API key:
+
+```bash
+uv sync --group annotation
+export OPENAI_API_KEY="..."
+```
+
+Use synchronous mode for small tests or when results are needed immediately.
+`--limit` selects the first eligible rows after already labeled rows are
+discarded:
+
+```bash
+uv run --group annotation python scripts/llm_judge.py run \
+  assets/annotations/manual_labels_blind.csv \
+  --mode sync \
+  --limit 10
+```
+
+Synchronous responses are persisted as they arrive. An interrupted execution
+can continue from its checkpoint with the same arguments plus `--resume`.
+
+Use Batch mode for larger offline runs:
+
+```bash
+uv run --group annotation python scripts/llm_judge.py run \
+  assets/annotations/manual_labels_blind.csv \
+  --mode batch
+```
+
+The Batch workflow can also be controlled step by step:
+
+```bash
+uv run --group annotation python scripts/llm_judge.py prepare \
+  assets/annotations/manual_labels_blind.csv
+
+uv run --group annotation python scripts/llm_judge.py submit \
+  assets/annotations/manual_labels_blind.judge-requests.jsonl
+
+uv run --group annotation python scripts/llm_judge.py status \
+  assets/annotations/manual_labels_blind.batch-state.json
+
+uv run --group annotation python scripts/llm_judge.py collect \
+  assets/annotations/manual_labels_blind.csv
+```
+
+By default, the CLI writes the applicable files next to the input CSV:
+
+```text
+<stem>.judge-requests.jsonl
+<stem>.judge-requests.meta.json
+<stem>.batch-state.json
+<stem>.sync-state.json
+<stem>.responses.jsonl
+<stem>.errors.jsonl
+<stem>.judged.csv
+```
+
+Output paths, model, and reasoning effort can be changed through command-line
+options. Existing labels are skipped unless `--include-labeled` is used. The
+judge instructions live in
+[`assets/prompts/question_pair_deduplication.md`](assets/prompts/question_pair_deduplication.md),
+and their SHA-256 hash is recorded with each execution. The previous
+`scripts/llm_judge_batch.py` entrypoint remains available for compatibility.
+
 ## Code structure
 
 ```text
@@ -225,6 +294,11 @@ src/mmlu_pt/
 ├── pipeline_minimal.py             # CLI arguments and orchestration
 ├── pipelines/definition.py         # NeMo Curator stages and workflows
 ├── mcqa_minimal.py                 # parsing, normalization, and predicates
+├── llm_as_a_judge/
+│   ├── judge_common.py             # shared request and result handling
+│   ├── judge_sync.py               # synchronous Responses API transport
+│   ├── judge_batch.py              # asynchronous Batch API transport
+│   └── judge_cli.py                # command definitions and orchestration
 └── utils/
     ├── csv.py                      # CSV/JSONL source preparation
     ├── manifest.py                 # manifest schema and loading

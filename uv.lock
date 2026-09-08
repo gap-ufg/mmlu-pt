@@ -2423,6 +2423,10 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+annotation = [
+    { name = "openai" },
+    { name = "pandas" },
+]
 notebook = [
     { name = "ipykernel" },
     { name = "ipywidgets" },
@@ -2441,6 +2445,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+annotation = [
+    { name = "openai", specifier = ">=2.53.0" },
+    { name = "pandas", specifier = ">=2.3.3" },
+]
 notebook = [
     { name = "ipykernel", specifier = ">=6.30" },
     { name = "ipywidgets", specifier = ">=8.1.9" },
