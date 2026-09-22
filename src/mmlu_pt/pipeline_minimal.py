@@ -3,6 +3,7 @@ import shutil
 
 # Evita que o Ray recrie o ambiente gerenciado pelo uv em /tmp para cada execução.
 os.environ.setdefault("RAY_ENABLE_UV_RUN_RUNTIME_ENV", "0")
+os.environ.setdefault("CUDA_VISIBLE_DEVICES", "0")
 
 import argparse  # noqa: I001
 from pathlib import Path
@@ -10,8 +11,11 @@ from pathlib import Path
 from nemo_curator.core.client import RayClient
 
 from mmlu_pt.pipelines.definition import (
+    DEDUPLICATED_DIR,
     DEDUPLICATION_WORK_DIR,
     FILTERED_DIR,
+    FUZZY_DEDUPLICATED_DIR,
+    FUZZY_WORK_DIR,
     ORIGINAL_DIR,
     PRE_WORD_FILTER_DIR,
     READ_DIR,
@@ -21,6 +25,7 @@ from mmlu_pt.pipelines.definition import (
     create_exact_deduplication_workflow,
     create_preprocessing_pipeline,
 )
+from mmlu_pt.pipelines.fuzzy import run_fuzzy_deduplication
 from mmlu_pt.utils.manifest import read_manifest_file
 from mmlu_pt.utils.pipeline_utils import (
     get_stage_record_counts,
@@ -36,6 +41,7 @@ STEP_INPUT_DIRS = {
     PipelineStep.STRUCTURAL_FILTER: READ_DIR,
     PipelineStep.WORD_FILTER: PRE_WORD_FILTER_DIR,
     PipelineStep.DEDUPLICATE: FILTERED_DIR,
+    PipelineStep.FUZZY_DEDUPLICATE: DEDUPLICATED_DIR,
 }
 
 
@@ -66,6 +72,8 @@ def _validate_resume_input(start_step: PipelineStep) -> None:
         return
 
     input_dir = STEP_INPUT_DIRS[start_step]
+    if start_step == PipelineStep.FUZZY_DEDUPLICATE and input_dir.is_dir():
+        return
     if input_dir.is_dir() and any(input_dir.glob("*.jsonl")):
         return
 
@@ -109,6 +117,11 @@ def main(
 
     _validate_resume_input(start_step)
 
+    if start_step == PipelineStep.FUZZY_DEDUPLICATE:
+        run_fuzzy_deduplication(DEDUPLICATED_DIR, FUZZY_DEDUPLICATED_DIR, FUZZY_WORK_DIR)
+        print("Pipeline completed successfully!")
+        return 0
+
     if start_step == PipelineStep.PREPARE_SOURCES:
         manifest_file = manifest_file.resolve()
         manifest = read_manifest_file(manifest_file)
@@ -151,6 +164,8 @@ def main(
         duplicate_removal_results,
         deduplication_input_records,
     )
+
+    run_fuzzy_deduplication(DEDUPLICATED_DIR, FUZZY_DEDUPLICATED_DIR, FUZZY_WORK_DIR)
 
     print(
         "Pipeline completed successfully! "

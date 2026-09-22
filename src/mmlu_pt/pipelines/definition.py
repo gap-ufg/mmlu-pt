@@ -40,6 +40,8 @@ DEDUPLICATION_RESULTS_DIR = DEDUPLICATION_WORK_DIR / "results"
 EXACT_DUPLICATE_IDS_DIR = DEDUPLICATION_RESULTS_DIR / "ExactDuplicateIds"
 EXACT_ID_GENERATOR_PATH = DEDUPLICATION_RESULTS_DIR / "exact_id_generator.json"
 DEDUPLICATED_DIR = OUTPUT_DIR / "05 - deduplicated"
+FUZZY_DEDUPLICATED_DIR = OUTPUT_DIR / "06 - fuzzy-deduplicated"
+FUZZY_WORK_DIR = OUTPUT_DIR / "fuzzy-deduplication-work"
 NORMALIZED_QUESTION_FIELD = "question_normalized"
 ANSWER_AND_CHOICES_FIELD = "answer_and_choices"
 SERIALIZED_CHOICES_FIELD = "choices_serialized"
@@ -54,6 +56,7 @@ class PipelineStep(IntEnum):
     STRUCTURAL_FILTER = 3
     WORD_FILTER = 4
     DEDUPLICATE = 5
+    FUZZY_DEDUPLICATE = 6
 
 
 def _normalization_stages() -> list:
