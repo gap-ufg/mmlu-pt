@@ -2434,7 +2434,11 @@ notebook = [
     { name = "matplotlib" },
     { name = "nbconvert" },
     { name = "nbformat" },
+    { name = "pandas" },
+    { name = "pyarrow" },
+    { name = "scikit-learn" },
     { name = "seaborn" },
+    { name = "sentence-transformers" },
 ]
 
 [package.metadata]
@@ -2456,7 +2460,11 @@ notebook = [
     { name = "matplotlib", specifier = ">=3.10" },
     { name = "nbconvert", specifier = ">=7.16" },
     { name = "nbformat", specifier = ">=5.10" },
+    { name = "pandas", specifier = ">=2.3.3" },
+    { name = "pyarrow", specifier = ">=19" },
+    { name = "scikit-learn", specifier = ">=1.7" },
     { name = "seaborn", specifier = ">=0.13" },
+    { name = "sentence-transformers", specifier = ">=5.6,<6" },
 ]
 
 [[package]]

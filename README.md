@@ -252,6 +252,35 @@ uv sync --group notebook
 uv run jupyter lab notebooks/question_choices_length_ablation.ipynb
 ```
 
+## Semantic-deduplication exploration
+
+The [semantic-deduplication notebook](notebooks/semantic_deduplication_ablation.ipynb)
+compares BGE-M3, GTE-multilingual-base, Qwen3-Embedding-8B, and
+NVIDIA Llama-Embed-Nemotron-8B on the 466 pairs in
+`assets/annotations/manual_labels_llm_annotated.csv`. It contrasts question-only
+and question-plus-choices embeddings, audits truncation, and selects a model and
+cosine threshold using nested grouped cross-validation with MCC. Explanations
+and literature references are in English; original exam questions remain in Portuguese.
+
+```bash
+uv sync --group notebook
+CUDA_VISIBLE_DEVICES=0 uv run --group notebook jupyter lab notebooks/semantic_deduplication_ablation.ipynb
+```
+
+`RUN_COMPUTE=True` downloads the models and computes missing caches on one NVIDIA
+GPU. Nemotron uses a temporary Transformers 4.51.0/tokenizers 0.21.4 runtime
+through `notebooks/nemotron_embeddings.py`, preserving the project environment.
+The full experiment targets a B200; batch sizes are configurable. Set
+`RUN_COMPUTE=False` to reuse complete caches without initializing CUDA. Results,
+model revisions, folds, figures, and manifests are saved under
+`output/semantic-deduplication-ablation/`, keyed by the input and configuration.
+
+The notebook also runs NeMo Curator 1.3.0 semantic deduplication with 1, 8, and 32
+clusters on the annotated items. It distinguishes pair classification from item
+removal, and audits references to items that are themselves marked for removal.
+The labels and production corpus are never modified. Results describe a
+lexically enriched, LLM-labeled sample rather than corpus-wide performance.
+
 ## LLM-as-a-Judge annotation
 
 The annotation CLI classifies candidate question pairs as `duplicate`,

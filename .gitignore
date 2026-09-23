@@ -12,3 +12,6 @@ wheels/
 runs/
 output
 temp
+
+# CUSTOM
+*.log
